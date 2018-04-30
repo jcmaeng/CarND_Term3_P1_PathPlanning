@@ -1,3 +1,10 @@
+# CarND_Term3_P1_PathPlanning
+
+This is my repository to manage source code for path planning project. It is the first project of Term 3 in Self-Driving Car Nanodegree in Udacity.
+
+Below is the instruction of this project
+----
+
 # CarND-Path-Planning-Project
 Self-Driving Car Engineer Nanodegree Program
    

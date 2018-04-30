@@ -247,6 +247,10 @@ int main() {
 
           	json msgJson;
 
+            // define the actual (x,y) points we will use for the planner
+            vector<double> next_x_vals;
+            vector<double> next_y_vals;
+
             // jcmaeng -e
             int previous_path_size = previous_path_x.size();
 
@@ -370,10 +374,10 @@ int main() {
             ptsy.push_back(ref_y_prev);
             ptsy.push_back(ref_y);
 
-            // in Frenet add evenly 30m spaced points ahead of the starting reference
-            vector<double> next_wp0 = getXY(car_s+30, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-            vector<double> next_wp1 = getXY(car_s+60, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-            vector<double> next_wp2 = getXY(car_s+90, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            // in Frenet add evenly 25m spaced points ahead of the starting reference
+            vector<double> next_wp0 = getXY(car_s+25, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            vector<double> next_wp1 = getXY(car_s+50, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            vector<double> next_wp2 = getXY(car_s+75, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
 
             ptsx.push_back(next_wp0[0]);
             ptsx.push_back(next_wp1[0]);
@@ -397,10 +401,6 @@ int main() {
 
             // set (x,y) points to the spline
             s.set_points(ptsx, ptsy);
-
-            // define the actual (x,y) points we will use for the planner
-            vector<double> next_x_vals;
-            vector<double> next_y_vals;
 
             // start with all of the previous path points from last time
             for (int i = 0; i < previous_path_x.size(); i++) {

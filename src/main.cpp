@@ -260,21 +260,21 @@ int main() {
               car_s = end_path_s;
             }
 
-            // check other car's current state, predict state and decide my car's action
+            // check other car's current state and predict state, then decide my car's action
             for (int i = 0; i < sensor_fusion.size(); i++)
             {
-              // get the state of detected car by sensors: [ id, x, y, vx, vy, s, d]
+              // get the current state of detected car by sensors
+              // [ id, x, y, vx, vy, s, d]
               double detected_d = sensor_fusion[i][SF_D];
               double detected_vx = sensor_fusion[i][SF_VX];
               double detected_vy = sensor_fusion[i][SF_VY];
               double detected_speed = sqrt(detected_vx * detected_vx + detected_vy * detected_vy);
               double detected_s = sensor_fusion[i][SF_S];
 
-              // predict other detected car's position at behavior horizon
-              // assumption : only moves in 's'- direction
+              // predict detected car's position at behavior horizon
+              // assume that cars only moves in 's'- direction
               detected_s += ((double)previous_path_size * (TIME_INTERVAL) * detected_speed);
 
-              // predict other car's state at behavior horizon
               bool detected_at_same_lane = false;
               if (detected_d > (2 + 4 * curr_lane - 2) && detected_d < (2 + 4 * curr_lane + 2))
                 detected_at_same_lane = true;
@@ -295,26 +295,26 @@ int main() {
               if (detected_s > car_s)
                 detected_at_front = true;
 
-              // other car is too close
+              // detected car is too close, so my car should decrease speed
               if (detected_at_same_lane && need_distance && detected_at_front)
               {
                 decrease_speed = true;
               }
 
-              // check if the left curr_lane is safe for curr_lane change
+              // check if the left lane is safe for lane change
               if (detected_at_left_lane && need_distance)
               {
                 left_is_empty = false;
               }
 
-              // check if the right curr_lane is safe for curr_lane change
+              // check if the right lane is safe for lane change
               if (detected_at_right_lane && need_distance)
               {
                 right_is_empty = false;
               }
             }
 
-            // Decelerate to keep safe distance
+            // decelerate to keep safe distance
             if (decrease_speed)
             {
               ref_speed -= SPEED_STEP;
@@ -330,18 +330,18 @@ int main() {
                 curr_lane++;
               }
             }
-            // Accelerate if no other car is within safe distance
+            // accelerate if no other car is within safe distance
             else if (ref_speed < SPEED_LIMIT)
             {
               ref_speed += SPEED_STEP;
             }
 
-            // Create a list of widely spaced (x,y) waypoints, evenly spaced at 30m
-            // Later we will interoplate these waypoints with a spline and fill it in with more points that control speed
+            // create a list of widely spaced (x,y) waypoints, evenly spaced at 30m
+            // later we will interoplate these waypoints with a spline and fill it in with more points that control speed
             vector<double> ptsx;
             vector<double> ptsy;
 
-            // reference x, y, yaw states
+            // reference states; x, y, yaw
             // either we will reference the starting point as where the car is or at the previouss paths end point
 
             // if previous size is almost empty, use the car as starting reference
@@ -363,14 +363,14 @@ int main() {
               ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
             }
 
-            // Use two points that make the path tangent to the previous path's end point
+            // use two points that make the path tangent to the previous path's end point
             ptsx.push_back(ref_x_prev);
             ptsx.push_back(ref_x);
 
             ptsy.push_back(ref_y_prev);
             ptsy.push_back(ref_y);
 
-            // In Frenet add evenly 30m spaced points ahead of the starting reference
+            // in Frenet add evenly 30m spaced points ahead of the starting reference
             vector<double> next_wp0 = getXY(car_s+30, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
             vector<double> next_wp1 = getXY(car_s+60, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
             vector<double> next_wp2 = getXY(car_s+90, (2+4*curr_lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
@@ -398,17 +398,17 @@ int main() {
             // set (x,y) points to the spline
             s.set_points(ptsx, ptsy);
 
-            // Define the actual (x,y) points we will use for the planner
+            // define the actual (x,y) points we will use for the planner
             vector<double> next_x_vals;
             vector<double> next_y_vals;
 
-            // Start with all of the previous path points from last time
+            // start with all of the previous path points from last time
             for (int i = 0; i < previous_path_x.size(); i++) {
               next_x_vals.push_back(previous_path_x[i]);
               next_y_vals.push_back(previous_path_y[i]);
             }
 
-            // Calculate how to break up spline points so that we travel at our desired reference velocity
+            // calculate how to break up spline points so that we travel at our desired reference velocity
             double target_x = (double)SPLINE_TARGET_X;
             double target_y = s(target_x);
             double target_dist = sqrt(target_x * target_x + target_y * target_y);
@@ -416,7 +416,7 @@ int main() {
             double x_delta = target_x / N;
             double x_prev = 0;
 
-            // Fill up the rest of our path planner points
+            // fill up the rest of our path planner points
             for (int i = 1; i <= NUM_PATH_POINTS - previous_path_x.size(); i++)
             {
               // get each (x,y) point in spline
